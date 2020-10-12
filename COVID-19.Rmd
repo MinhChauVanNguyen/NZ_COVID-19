@@ -4,6 +4,7 @@ author: "Minh Chau Van Nguyen"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
+    vertical_layout: fill
     source_code: embed
 runtime: shiny
 ---
@@ -36,7 +37,6 @@ dd <- merge(fake_dt, true_dt, by = c("SA22018_V1_00", "Ethnicity"))
 
 Inputs {.sidebar}
 -----------------------------------------------------------------------
-
 ```{r}
 selectInput(inputId = "Location", 
             label = h3("Terriotal Authority"), 
@@ -45,101 +45,65 @@ selectInput(inputId = "Location",
 loca <- reactive(input$Location)
 ```
 
-Microarray data matrix for 80 experiments with Saccharomyces Cerevisiae
-organism extracted from R's `biclust` package.
 
-Sebastian Kaiser, Rodrigo Santamaria, Tatsiana Khamiakova, Martin Sill, Roberto
-  Theron, Luis Quintales, Friedrich Leisch and Ewoud De Troyer. (2015). biclust:
-  BiCluster Algorithms. R package version 1.2.0.
-  http://CRAN.R-project.org/package=biclust
 
-Row
+
+
+Row 
 -----------------------------------------------------------------------
 
-### Scatter Chart with geom_point 
-
+### One
 ```{r}
 renderHighchart({
   new <- dd[dd$TA2018_V1_00_NAME == loca(),]
   data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
-  names(data)[c(2,5)] <- c("NZDep", "Population")
+  
+  names(data)[c(2:5)] <- c("NZDep", "Area", "y", "Population")
   
   data$Ethnicity <- factor(data$Ethnicity)
+  data$NZDep <- as.character(data$NZDep)
+  data$Population <- as.character(round(data$Population))
+
   levels(data$Ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
   data$Ethnicity <- factor(data$Ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
   
-  data <- with(data, data[order(Ethnicity, SA22018_V1_00_NAME, Number_of_Tests, NZDep, Population),])
+  data <- with(data, data[order(Ethnicity, Area, y, NZDep, Population),])
   
-  data$SA22018_V1_00_NAME <- factor(data$SA22018_V1_00_NAME)
+  data$Area <- factor(data$Area)
   
   hc <- highchart() %>%
-  hc_chart(type = "column") %>%
+  hc_chart(type = "column", inverted = TRUE) %>%
   hc_yAxis(title = list(text = "Number of tests per day", style = list(fontWeight = 'bold'))) %>%
   hc_xAxis(categories = levels(data$Ethnicity), title = list(text = "Priotised Ethnicity group", style = list(fontWeight = 'bold'))) %>%
   hc_plotOptions(column = list(
-    dataLabels = list(enabled = FALSE),
     stacking = "normal",
     borderColor = "#5ab1ef",
     borderWidth = 2,
     enableMouseTracking = TRUE))
-
-for(lvl in levels(data$SA22018_V1_00_NAME)){
-  dt <- data[data$SA22018_V1_00_NAME == lvl, ][,4]
-  hc <- hc_add_series(hc, data = dt, name = lvl)
+  
+  for(i in 1:length(levels(data$Area))){
+  lvl <- levels(data$Area)[i]
+  da <- list_parse(data %>% filter(Area==lvl) %>% select(y, pop = Population, name = NZDep))
+  if(i <= 10){
+    hc <- hc_add_series(hc, data = da, name = lvl, visible = TRUE)
+  }else{
+    hc <- hc_add_series(hc, data = da, name = lvl, visible = FALSE)
+  }
 }
 
-hc %>% hc_chart(inverted = TRUE) %>%
-  hc_tooltip(formatter= JS("function () { 
-  return '<b>Area: </b>' + this.series.name  + 
-  ' <br /> <b>Number of tests:</b> ' + this.point.y + ' tests' + 
-  '<br /> <b>Population:</b> ' + this.point.Population +
-  '<br /> <b>NZ Deprivation Index:</b> ' + this.point.NZDep;}"))
+hc <- hc %>% 
+  hc_tooltip(formatter= JS("function () {
+  return '<b>Area: </b>' + this.series.name  +
+  '<br /> <b>Number of tests:</b> ' + this.point.y + ' tests' +
+  '<br /> <b>Population:</b> ' + this.point.pop + ' persons' +
+  '<br /> <b>NZ Deprivation Index:</b> ' + this.point.name;}"))
+
+hc
 })
 ```
 
 
-Row
------------------------------------------------------------------------
 
-### Scatter Chart with geom_point
 
-```{r}
-renderHighchart({
-  new <- dd[dd$TA2018_V1_00_NAME == loca(),]
-  data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
-  names(data)[c(2,5)] <- c("NZDep", "Population")
-  
-  data$Ethnicity <- factor(data$Ethnicity)
-  levels(data$Ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
-  data$Ethnicity <- factor(data$Ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
-  
-  data <- with(data, data[order(Ethnicity, SA22018_V1_00_NAME, Number_of_Tests, NZDep, Population),])
-  
-  data$SA22018_V1_00_NAME <- factor(data$SA22018_V1_00_NAME)
-  
-  hc <- highchart() %>%
-  hc_chart(type = "column") %>%
-  hc_yAxis(title = list(text = "Number of tests per day", style = list(fontWeight = 'bold'))) %>%
-  hc_xAxis(categories = levels(data$Ethnicity), title = list(text = "Priotised Ethnicity group", style = list(fontWeight = 'bold'))) %>%
-  hc_plotOptions(column = list(
-    dataLabels = list(enabled = FALSE),
-    stacking = "normal",
-    borderColor = "#5ab1ef",
-    borderWidth = 2,
-    enableMouseTracking = TRUE))
-
-for(lvl in levels(data$SA22018_V1_00_NAME)){
-  dt <- data[data$SA22018_V1_00_NAME == lvl, ][,4]
-  hc <- hc_add_series(hc, data = dt, name = lvl)
-}
-
-hc %>% hc_chart(inverted = TRUE) %>%
-  hc_tooltip(formatter= JS("function () { 
-  return '<b>Area: </b>' + this.series.name  + 
-  ' <br /> <b>Number of tests:</b> ' + this.point.y + ' tests' + 
-  '<br /> <b>Population:</b> ' + this.point.Population +
-  '<br /> <b>NZ Deprivation Index:</b> ' + this.point.NZDep;}"))
-})
-```
 
 
