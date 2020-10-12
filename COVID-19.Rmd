@@ -93,7 +93,8 @@ renderHighchart({
 
 hc <- hc %>% 
   hc_tooltip(formatter= JS("function () {
-  return '<b>Area: </b>' + this.series.name  +
+  return this.x +
+  '<br /> <b>Area: </b>' + this.series.name  +
   '<br /> <b>Number of tests:</b> ' + this.point.y + ' tests' +
   '<br /> <b>Population:</b> ' + this.point.pop + ' persons' +
   '<br /> <b>NZ Deprivation Index:</b> ' + this.point.name;}"))
