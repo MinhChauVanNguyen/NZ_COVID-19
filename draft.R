@@ -10,8 +10,8 @@ names(true_dt)[2] <- "SA22018_V1_00"
 # excluding those that replied "Unknown" for Ethnicity (n = 1656 observations)
 dd <- merge(fake_dt, true_dt, by = c("SA22018_V1_00", "Ethnicity"))
 
-new <- dd[dd$TA2018_V1_00_NAME == "Auckland",]
-data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
+new <- dd[dd$TA2018_V1_00_NAME == "Far North District",]
+data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
 
 names(data)[c(2:5)] <- c("NZDep", "Area", "y", "Population")
 
@@ -55,3 +55,8 @@ hc <- hc %>%
   '<br /> <b>NZ Deprivation Index:</b> ' + this.point.name;}"))
 
 hc
+
+
+
+
+
