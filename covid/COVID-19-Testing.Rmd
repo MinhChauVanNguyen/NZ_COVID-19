@@ -23,8 +23,10 @@ body, h1, h2, h3, h4, h5, h6{
 table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
   background-color: rgba(223, 177, 214, 0.5) !important;
 }
+
 table.dataTable  {
-  font-size: 12.5px;
+  font-size: 12px;
+  overflow-y:auto;
 }
 .shiny-input-container > label {
 margin-bottom: -15px;
@@ -43,15 +45,12 @@ library(highcharter)    # produce chart
 library(knitr)          # produce html table
 library(formattable)
 library(DT)     # produce html table
-
 fake_dt <- read_excel("Analyst_Lab_Data 2.xls")     # fake lab data
 true_dt <- read_excel("Population_Data 2.xls")      # real population data
 names(true_dt)[2] <- "SA22018_V1_00"                # rename SA22018_V1_00_NAME for merging purpose
-
 # combine fake data and real data together, joined by SA22018_V1_00 and Ethnicity
 # data excluding those that replied "Unknown" for Ethnicity (n = 1656 observations)
 full_dt <- merge(fake_dt, true_dt, by = c("SA22018_V1_00", "Ethnicity"))
-
 # map each region to South and North Islands
 island <- c("South Island", "North Island", "South Island", "North Island",
             "North Island", "South Island", "Chatham Island", "South Island",
@@ -110,7 +109,9 @@ $\star$ The date for number of tests taken is unavailable
 
 <div style = "margin-bottom:120px"></div>
 
-*Date completed: <span style="font-size:12px;">15$^{th}$ October, 2020</span>*
+<footer>
+<span style="font-size:12px;">*Start date: <span style="font-size:12px;">13$^{th}$ October, 2020*</span>
+</footer>
 
 Row 
 -----------------------------------------------------------------------
@@ -125,14 +126,15 @@ Row
 reactive_data <- reactive({
   subset_data <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
   data <- subset_data[names(subset_data) %in% c("Ethnicity", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
-  
-  # Highchart tooltip doesn't like column names with special characters or spacing,
+  data <- subset_data[names(subset_data) %in% c("Ethnicity", "SA22018_V1_00", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
+
+# x - population, y - number of tests, z - NZDep, name - SA2
+    # Highchart tooltip doesn't like column names with special characters or spacing,
   # for example Number_of_Tests
-  names(data)[c(2:5)] <- c("NZDep", "Area", "y", "Population")
-  
+
+  names(data) <- c("name", "Ethnicity", "NZDep", "Area", "y", "Population")
+
   data$Ethnicity <- factor(data$Ethnicity)
-  data$NZDep <- as.character(data$NZDep)
-  data$Population <- as.character(round(data$Population))
   
   # rename Maori as Māori
   levels(data$Ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
@@ -142,6 +144,9 @@ reactive_data <- reactive({
 
 renderHighchart({
   data <- reactive_data()
+  
+  data$NZDep <- as.character(data$NZDep)
+  data$Population <- as.character(round(data$Population))
   
   # Order data with respect to Ethnicity group otherwise highchart won't ouput the correct results
   data <- with(data, data[order(Ethnicity, Area, y, NZDep, Population),])
@@ -164,7 +169,6 @@ renderHighchart({
     borderWidth = 2,
     enableMouseTracking = TRUE)) 
   #%>% hc_size(height = 200)
-
   # Loop through each sub-Region/Area levels
   for(i in 1:length(levels(data$Area))){
     lvl <- levels(data$Area)[i]
@@ -178,10 +182,10 @@ renderHighchart({
       hc <- hc_add_series(hc, data = da, name = lvl, visible = FALSE)
     }
 }
-
 hc <- hc %>%
-  hc_tooltip(formatter= JS("function () {
-  return  '\u25CF ' + this.x +
+  hc_tooltip(useHTML = TRUE,
+  formatter= JS("function () {
+  return '\u25CF ' + this.x +
   '<br /> <b>Area: </b>' + this.series.name  +
   '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
   '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.pop, -1, '.', ',') + ' persons' +
@@ -191,10 +195,10 @@ hc <- hc %>%
     align = "left",
     verticalAlign = "top",
     layout = "vertical") 
-
 hc
 })
 ```
+
 
 
 Row {data-height=650}
@@ -205,34 +209,22 @@ Row {data-height=650}
 
 
 ```{r}
-bubble_data <- reactive({
-  new <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
-  data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
-  names(data) <- c("name", "ethnicity", "z", "area", "y", "x")
-  data$x <- round(data$x)
-  data <- data %>% select(x, y, z, name, area, ethnicity)
-  
-  data$ethnicity <- factor(data$ethnicity)
-  levels(data$ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
-  data$ethnicity <- factor(data$ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
-  data
-})
-
-
 renderHighchart({
- data <- bubble_data()
-  
+ data <- reactive_data()
+ names(data) <- c("name", "Ethnicity", "z", "Area", "y", "x")
+ 
+ data$x <- round(data$x)
+ 
  highchart() %>%
   hc_chart(type = "bubble", plotBorderWidth = 1, height = 350) %>%
   hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
                 marker = list(enabled = FALSE),
                 events = list(legendItemClick = JS("function() {return false;}"))) %>%
-  hc_add_series(data = list_parse(data[data$ethnicity == "Māori", ]), color = "#AFEEEE", name = "Māori") %>%
-  hc_add_series(data = list_parse(data[data$ethnicity == "Pacific", ]), color = "#ff83c1", name = "Pacific", visible = FALSE) %>%
-  hc_add_series(data = list_parse(data[data$ethnicity == "Asian", ]), color = "#8c63aa", name = "Asian", visible = FALSE) %>%
-  hc_add_series(data = list_parse(data[data$ethnicity == "Other", ]),  name = "Other", visible = FALSE) %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Māori", ]), color = "#AFEEEE", name = "Māori") %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Pacific", ]), color = "#ff83c1", name = "Pacific", visible = FALSE) %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Asian", ]), color = "#8c63aa", name = "Asian", visible = FALSE) %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Other", ]),  name = "Other", visible = FALSE) %>%
   hc_xAxis(title = list(text = 'Population estimate (persons)', 
-                        #offset = -1,
                         style = list(fontWeight = 'bold')),
            labels = list(style = list(fontSize = '9px'),
                          formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}")),
@@ -250,13 +242,20 @@ renderHighchart({
         style = list(
           fontSize = '9px'
         )))) %>%
-  hc_tooltip(
-    useHTML = TRUE, headerFormat = '<table>', footerFormat = '</table>',
-    pointFormat = "<tr><th colspan=2><h4>{point.area}</h4></th></tr> 
-       <tr><th>Number of tests:</th><td>{point.y:,.0f} tests</td></tr> 
-       <tr><th>Population estimate:</th><td>{point.x:,.0f} persons</td></tr>
-       <tr><th>NZ Dep:</th><td>{point.z}</td></tr>",
-    followPointer = TRUE) %>%
+   hc_tooltip(useHTML = TRUE,
+   formatter= JS("function () {
+  return '<span style =\"color:' + this.point.series.color + ';font-weight:bold;\">\u25CF ' + this.point.Area + '</span>' + 
+  '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
+  '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.x, -1, '.', ',') + ' persons' +
+  '<br /> <b>NZ Dep:</b> ' + this.point.z}")) %>%
+#   hc_tooltip(
+#     useHTML = TRUE, headerFormat = '<table>', footerFormat = '</table>',
+#     pointFormat = "<tr><th colspan=2><span style='color:point.area.color;font-weight:bold;'> 
+# <h5>{point.area}</h5></span></th></tr> 
+#        <tr><th>Number of tests:</th><td>{point.y:,.0f} tests</td></tr> 
+#        <tr><th>Population estimate:</th><td>{point.x:,.0f} persons</td></tr>
+#        <tr><th>NZ Dep:</th><td>{point.z}</td></tr>",
+#     followPointer = TRUE) %>%
   hc_legend(
      layout = 'horizontal',
      align =  'center',
@@ -275,10 +274,10 @@ data_for_table <- reactive({
   data <- reactive_data()
   
   # calculate sum of Number of tests and sum of Population estimates, grouped by Ethnicity
-  dt1 <- aggregate(cbind(Tests = data$y, Population = as.numeric(data$Population)), 
+  dt1 <- aggregate(cbind(Tests = data$y, Population = data$Population), 
           by=list(Ethnicity = data$Ethnicity), FUN = sum)
   # calculate average of NZDep, grouped by Ethnicity
-  dt2 <- aggregate(cbind(NZDep = as.numeric(data$NZDep)),
+  dt2 <- aggregate(cbind(NZDep = data$NZDep),
                    by = list(Ethnicity = data$Ethnicity), FUN = mean)
   
   dt2$NZDep <- round(dt2$NZDep)
@@ -286,8 +285,6 @@ data_for_table <- reactive({
                       dt1, dt2[-1]))
   table_data
 })
-
-
 custom_color_tile <- function (...){
   data <- data_for_table()
     formatter("span",
@@ -298,7 +295,6 @@ custom_color_tile <- function (...){
                       `border-radius` = "4px", 
                       `background-color` = ifelse(data$Population > data$Tests, "#B1CBEB", "none")))
 }
-
 DT::renderDataTable({
   m <- data_for_table() %>% 
     formattable(list(area(col=1:5) ~ custom_color_tile()))
@@ -312,6 +308,3 @@ DT::renderDataTable({
           ))
 })
 ```
-
-
-

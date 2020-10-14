@@ -1,14 +1,14 @@
+new <- dd[dd$TA2018_V1_00_NAME == "Napier City",]
 data <- new[names(new) %in% c("Ethnicity", "SA22018_V1_00", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
-names(data) <- c("name", "ethnicity", "z", "area", "y", "x")
-data$x <- round(data$x)
 
-data <- data %>% select(x, y, z, name, area, ethnicity)
+# x - population, y - number of tests, z - NZDep, name - SA2
+names(data) <- c("name", "ethnicity", "NZDep", "area", "y", "Population")
 
 data$ethnicity <- factor(data$ethnicity)
 levels(data$ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
 data$ethnicity <- factor(data$ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
 
-df <- head(with(data, data[order(area, ethnicity, x, y, z),]), 11)
+data$Population <- round(data$Population)
 
 highchart() %>%
   hc_chart(type = "bubble", plotBorderWidth = 1) %>%
