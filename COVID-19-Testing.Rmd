@@ -11,9 +11,11 @@ runtime: shiny
 margin-left:220px !important;
 }
 
-img{
-     max-width:140px;
-     max-height:140px;
+.shiny-output-error-validation {
+    color: #ff0000;
+    font-weight: bold;
+    margin-top:10px;
+    text-align:center;
 }
 
 body, h1, h2, h3, h4, h5, h6{
@@ -25,15 +27,27 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
 }
 
 table.dataTable  {
-  font-size: 12px;
-  overflow-y:auto;
+  font-size: 90%;
 }
+
+table.dataTable.no-footer {
+  border-bottom: 1px solid #ddd;
+}
+
 .shiny-input-container > label {
-margin-bottom: -15px;
-margin-top:5px;
+  margin-bottom: -15px;
+  margin-top:5px;
 }
+
 .selectize-input .item {
 color: #1a6ecc;
+}
+
+.alert-info {
+  background-color:#042f66;
+  color:white;
+  font-size:bold;
+  font-size:86%;
 }
 </style>
 
@@ -44,13 +58,25 @@ library(dplyr)          # data manipulation
 library(highcharter)    # produce chart  
 library(knitr)          # produce html table
 library(formattable)
-library(DT)     # produce html table
+library(DT)             # produce html table
+library(shinyBS)
+library(shinyjqui)
+
 fake_dt <- read_excel("Analyst_Lab_Data 2.xls")     # fake lab data
 true_dt <- read_excel("Population_Data 2.xls")      # real population data
 names(true_dt)[2] <- "SA22018_V1_00"                # rename SA22018_V1_00_NAME for merging purpose
 # combine fake data and real data together, joined by SA22018_V1_00 and Ethnicity
 # data excluding those that replied "Unknown" for Ethnicity (n = 1656 observations)
 full_dt <- merge(fake_dt, true_dt, by = c("SA22018_V1_00", "Ethnicity"))
+
+full_dt$Census_2019_Population_Estimate <- round(full_dt$Census_2019_Population_Estimate)
+
+full_dt$Ethnicity <- factor(full_dt$Ethnicity)
+
+# rename Maori as Māori
+levels(full_dt$Ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
+full_dt$Ethnicity <- factor(full_dt$Ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
+
 # map each region to South and North Islands
 island <- c("South Island", "North Island", "South Island", "North Island",
             "North Island", "South Island", "Chatham Island", "South Island",
@@ -75,35 +101,42 @@ island <- c("South Island", "North Island", "South Island", "North Island",
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 ```{r}
-region_data <- data.frame(cbind(Region = levels(factor(full_dt$TA2018_V1_00_NAME)), 
+full_dt$TA2018_V1_00_NAME <- factor(full_dt$TA2018_V1_00_NAME)
+
+region_data <- data.frame(cbind(Region = levels(full_dt$TA2018_V1_00_NAME), 
                      Island = island))
+
 selectInput(inputId = "Location", 
             label = h5("Terriotal Authority"), 
             choices = split(region_data$Region, region_data$Island),
-            selected = "Napier City")
+            selected = "Whangarei District")
 ```
 
 Key definitions:
 
 <hr>
 
-<div style = "font-size: 11.5px; margin-bottom:30px;">
+<div style = "font-size: 85%; margin-bottom:30px;">
 $\star$ **Priotised Ethnicity** - "each person being allocated to a SINGLE ethnic group based on the ethnic groups they have identified with". The order is followed by Māori, Pacific, Asian and Other.
 
-$\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the index of deprivation indicates that the area is in the most deprived 10 percent of areas in New Zealand.
+$\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas in New Zealand and vice versa.
 
 $\star$ **Population Estimate** - this is based on 2019 Census subnational population estimates.
 
 </div>
 
+```{r}
+bsAlert(anchorId = "Info")
+```
+
 Limitations of data analysis:
 <hr>
 
-<div style = "font-size: 11.5px;">
+<div style = "font-size: 85%;">
 
 $\star$ The data excludes those that replied "Unknown" for Ethnicity (n = 1656 observations) hence doesn't take these individuals into account.
 
-$\star$ The date for number of tests taken is unavailable
+$\star$ The period of time for when the cumulative number of tests are assumed to be per month and taken during the previous month (September, 2020). 
 
 </div>
 
@@ -119,26 +152,18 @@ Row
 
 ### **Stacked Bar Chart** 
 
-<div style="font-size:11px;">This bar chart displays the number of tests taken per day for each Ethnicity group at sub-Region/Area level within Region (Input). Hover over each bar for more information.</div>
+<div style="font-size:85%;">This bar chart displays the number of tests taken per day for each Ethnicity group at sub-Region/Area level within Districts/Cities (Input). Hover over each bar for more information.</div>
+
 ```{r}
 # subset data for each Terriotal Authority/Region
 # make this data reactive for use and reproducibility
 reactive_data <- reactive({
   subset_data <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
-  data <- subset_data[names(subset_data) %in% c("Ethnicity", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
   data <- subset_data[names(subset_data) %in% c("Ethnicity", "SA22018_V1_00", "SA22018_V1_00_NAME", "Number_of_Tests", "SA2_average_NZDep2018", "Census_2019_Population_Estimate")]
 
-# x - population, y - number of tests, z - NZDep, name - SA2
-    # Highchart tooltip doesn't like column names with special characters or spacing,
-  # for example Number_of_Tests
-
+    # Highchart tooltip doesn't like column names with special characters or spacing, for example Number_of_Tests
   names(data) <- c("name", "Ethnicity", "NZDep", "Area", "y", "Population")
 
-  data$Ethnicity <- factor(data$Ethnicity)
-  
-  # rename Maori as Māori
-  levels(data$Ethnicity) <- c("Asian", "Māori", "Other", "Pacific")
-  data$Ethnicity <- factor(data$Ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
   data
 })
 
@@ -146,7 +171,7 @@ renderHighchart({
   data <- reactive_data()
   
   data$NZDep <- as.character(data$NZDep)
-  data$Population <- as.character(round(data$Population))
+  data$Population <- as.character(data$Population)
   
   # Order data with respect to Ethnicity group otherwise highchart won't ouput the correct results
   data <- with(data, data[order(Ethnicity, Area, y, NZDep, Population),])
@@ -155,7 +180,7 @@ renderHighchart({
   
   hc <- highchart() %>%
     hc_chart(type = "column", height = 350, inverted = TRUE, style = list(fontFamily = "Helvetica")) %>%
-    hc_yAxis(title = list(text = "Number of tests per day", 
+    hc_yAxis(title = list(text = "Number of tests", 
                           style = list(fontWeight = 'bold')),
              lineColor = "black", lineWidth = 1, reversedStacks = FALSE,
              labels = list(formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}"))) %>%
@@ -183,9 +208,10 @@ renderHighchart({
     }
 }
 hc <- hc %>%
-  hc_tooltip(useHTML = TRUE,
-  formatter= JS("function () {
-  return '\u25CF ' + this.x +
+  hc_tooltip(
+    useHTML = TRUE,
+    formatter= JS("function () {
+  return  '<span style =\"color:#1a6ecc\">' +  '\u25CF ' +  '<b>' + this.x + '</b>'  + '</span>' + 
   '<br /> <b>Area: </b>' + this.series.name  +
   '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
   '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.pop, -1, '.', ',') + ' persons' +
@@ -204,23 +230,31 @@ hc
 Row {data-height=650}
 -----------------------------------------------------------------------
 
-### **Bubble Chart** <span style = "color: #1a6ecc">(bubble labels are SA2 codes)</span>
-<div style="font-size:11px;">Sizes of the bubbles correspond to NZ Deprivation Index values where the bigger the bubble the higher the index.</div>
-
-
+### **Bubble Chart** 
 ```{r}
+actionLink(inputId = "info", "Click for instructions on how to read the bubble chart", style='font-size:80%;font-weight:bold;')
+
+observeEvent(input$info, {
+  createAlert(session, anchorId = "Info", title = "You can drag me", 
+              content = HTML("<div class = alert-info role = alert style = 'text-align:left;'>
+               1. Labels of the bubbles represent Statistic Area 2 (SA2) codes <br>
+               2. Sizes of the bubbles correspond to NZ Deprivation Index values, where the bigger the bubble the higher the index.
+                </o></div>"), append = FALSE, style = "info")
+  jqui_draggable(selector = '.alert-info')
+})
+
 renderHighchart({
  data <- reactive_data()
  names(data) <- c("name", "Ethnicity", "z", "Area", "y", "x")
  
- data$x <- round(data$x)
+ #data$x <- round(data$x)
  
  highchart() %>%
   hc_chart(type = "bubble", plotBorderWidth = 1, height = 350) %>%
   hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
                 marker = list(enabled = FALSE),
                 events = list(legendItemClick = JS("function() {return false;}"))) %>%
-  hc_add_series(data = list_parse(data[data$Ethnicity == "Māori", ]), color = "#AFEEEE", name = "Māori") %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Māori", ]), color = "#5ac8c8", name = "Māori") %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Pacific", ]), color = "#ff83c1", name = "Pacific", visible = FALSE) %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Asian", ]), color = "#8c63aa", name = "Asian", visible = FALSE) %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Other", ]),  name = "Other", visible = FALSE) %>%
@@ -230,7 +264,7 @@ renderHighchart({
                          formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}")),
            gridLineWith = 1) %>%
   hc_yAxis(startOnTick = FALSE, endOnTick = FALSE,  # doesn't work in browser
-           title = list(text = 'Number of tests per day', 
+           title = list(text = 'Number of tests', 
                        style = list(fontWeight = 'bold')),           
            labels = list(style = list(fontSize = '9px')),
            maxPadding = 0.2, gridLineWidth = 1) %>%
@@ -248,14 +282,6 @@ renderHighchart({
   '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
   '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.x, -1, '.', ',') + ' persons' +
   '<br /> <b>NZ Dep:</b> ' + this.point.z}")) %>%
-#   hc_tooltip(
-#     useHTML = TRUE, headerFormat = '<table>', footerFormat = '</table>',
-#     pointFormat = "<tr><th colspan=2><span style='color:point.area.color;font-weight:bold;'> 
-# <h5>{point.area}</h5></span></th></tr> 
-#        <tr><th>Number of tests:</th><td>{point.y:,.0f} tests</td></tr> 
-#        <tr><th>Population estimate:</th><td>{point.x:,.0f} persons</td></tr>
-#        <tr><th>NZ Dep:</th><td>{point.z}</td></tr>",
-#     followPointer = TRUE) %>%
   hc_legend(
      layout = 'horizontal',
      align =  'center',
@@ -268,43 +294,58 @@ renderHighchart({
 
 ### **Table**
 
-<div style = "font-size:11px;">Describes the total number of tests, total population estimates and average New Zealand Deprivation Index for each selected region (Input), grouped by Ethnicity.</div>
 ```{r}
-data_for_table <- reactive({
-  data <- reactive_data()
+table_data <- reactive({
+  data <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
+  subset_data <- data[which(data$Number_of_Tests < data$Census_2019_Population_Estimate & data$SA2_average_NZDep2018 > 5),]
+  subset_data <- subset_data[,!(names(subset_data) %in% c("SA22018_V1_00", "SA2_average_NZDep2018_score"))]
+  subset_data <- subset_data %>% mutate(Rate = Number_of_Tests/Census_2019_Population_Estimate) %>% select(SA22018_V1_00_NAME, Ethnicity, SA2_average_NZDep2018, Number_of_Tests, Census_2019_Population_Estimate, Rate)
   
-  # calculate sum of Number of tests and sum of Population estimates, grouped by Ethnicity
-  dt1 <- aggregate(cbind(Tests = data$y, Population = data$Population), 
-          by=list(Ethnicity = data$Ethnicity), FUN = sum)
-  # calculate average of NZDep, grouped by Ethnicity
-  dt2 <- aggregate(cbind(NZDep = data$NZDep),
-                   by = list(Ethnicity = data$Ethnicity), FUN = mean)
-  
-  dt2$NZDep <- round(dt2$NZDep)
-  table_data <- data.frame(cbind(Location = rep(input$Location,4),
-                      dt1, dt2[-1]))
-  table_data
+  subset_data
 })
+
 custom_color_tile <- function (...){
-  data <- data_for_table()
+  data <- table_data()
     formatter("span",
               style = function(x) 
                 style(display = "block", 
                       padding = "0 4px", 
                       `color` = "black", 
                       `border-radius` = "4px", 
-                      `background-color` = ifelse(data$Population > data$Tests, "#B1CBEB", "none")))
+                      `background-color` = ifelse(data$Rate < 0.2, "#B1CBEB", "none")))
 }
+
+js <- c(
+  "function(settings){",
+  "  var datatable = settings.oInstance.api();",
+  "  var table = datatable.table().node();",
+  "  var caption = 'Rows highlighted in blue indicating the test rates are less than 20 tests per 100 persons.'",
+  "  $(table).append('<caption style=\"caption-side:bottom; text-align:left; margin:-2px 0 0 5px; font-size:11.5px; font-style:italic;color:#1a6ecc;\">' + caption + '</caption>');",
+  "}"
+)
+
 DT::renderDataTable({
-  m <- data_for_table() %>% 
-    formattable(list(area(col=1:5) ~ custom_color_tile()))
-   return(as.datatable(m, rownames = FALSE, 
-                      colnames = c('Region', 'Priotised Ethnicity*', 'Number of tests', 'Population estimates (persons)*', 'NZ Deprivation Index*'),
-                       caption = tags$caption(
-        style = "caption-side:bottom; text-align:left; margin:-2px 0 0 5px; font-size:11.5px; font-style:italic;",
-        tags$span("Rows highlighted in blue indicating the number of tests taken is smaller than the population estimate for the corresponding Ethnicity group and Location.", style = "color:#1a6ecc"), tags$br(), tags$span("*These measures were rounded to whole number.", style = "color:black;")),
-        options = list(searching = FALSE, paging = FALSE, lengthChange = FALSE,  
-                       bInfo = FALSE, columnDefs = list(list(className = 'dt-left', targets = "_all")))
-          ))
+  validate(
+     need(nrow(table_data())>0, "Sorry, there is no data availale based on the indicated filter for this region.")
+   )
+  data <- table_data() %>% formattable(
+    list(area(col=1:6) ~ custom_color_tile()))
+
+  data$Rate <- percent(data$Rate, 1)
+  
+   return(as.datatable(
+     data, 
+     fillContainer = TRUE,
+     rownames = FALSE,
+     colnames = c('Area', 'Ethnicity', 'NZDep', 'Total tests', 'Population estimate', 'Test rate per 100 persons'),
+     caption = tags$caption(
+        style = "color:black; margin:0 0 -15px 0; font-size:11.5px;",
+        tags$span("Table summarising filtered testing data where the number of tests are smaller than the population estimates with a NZDep larger than 5 and grouped by ethnicity at SA2 levels, for"), tags$span(input$Location, style = 'color:#1a6ecc;font-weight:bold;')),
+     options = list(
+       drawCallback = JS(js),
+       searching = FALSE, paging = FALSE, lengthChange = FALSE, bInfo = FALSE,
+       columnDefs = list(list(className = 'dt-left', targets = "_all")))
+    )
+    )  
 })
 ```
