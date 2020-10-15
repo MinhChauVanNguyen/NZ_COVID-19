@@ -121,7 +121,7 @@ $\star$ **Priotised Ethnicity** - "each person being allocated to a SINGLE ethni
 
 $\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas in New Zealand and vice versa.
 
-$\star$ **Population Estimate** - this is based on 2019 Census subnational population estimates.
+$\star$ **Population Estimate** - this is based on 2019 Census population estimates recorded at Statistical Area 2 (SA2) geographical levels.
 
 </div>
 
@@ -134,7 +134,7 @@ Limitations of data analysis:
 
 <div style = "font-size: 85%;">
 
-$\star$ The data excludes those that replied "Unknown" for Ethnicity (n = 1656 observations) hence doesn't take these individuals into account.
+$\star$ The data excludes those that are categorised as "Unknown" for Ethnicity (n = 1656 observations) hence doesn't take these individuals into account.
 
 $\star$ The period of time for when the cumulative number of tests are assumed to be per month and taken during the previous month (September, 2020). 
 
@@ -235,19 +235,17 @@ Row {data-height=650}
 actionLink(inputId = "info", "Click for instructions on how to read the bubble chart", style='font-size:80%;font-weight:bold;')
 
 observeEvent(input$info, {
-  createAlert(session, anchorId = "Info", title = "You can drag me", 
+  createAlert(session, anchorId = "Info", title = "Please read", 
               content = HTML("<div class = alert-info role = alert style = 'text-align:left;'>
                1. Labels of the bubbles represent Statistic Area 2 (SA2) codes <br>
                2. Sizes of the bubbles correspond to NZ Deprivation Index values, where the bigger the bubble the higher the index.
                 </o></div>"), append = FALSE, style = "info")
-  jqui_draggable(selector = '.alert-info')
+  #jqui_draggable(selector = '.alert-info')
 })
 
 renderHighchart({
  data <- reactive_data()
  names(data) <- c("name", "Ethnicity", "z", "Area", "y", "x")
- 
- #data$x <- round(data$x)
  
  highchart() %>%
   hc_chart(type = "bubble", plotBorderWidth = 1, height = 350) %>%
@@ -293,6 +291,7 @@ renderHighchart({
 
 
 ### **Table**
+
 
 ```{r}
 table_data <- reactive({
@@ -349,3 +348,4 @@ DT::renderDataTable({
     )  
 })
 ```
+
