@@ -47,7 +47,7 @@ color: #1a6ecc;
   background-color:#042f66;
   color:white;
   font-size:bold;
-  font-size:86%;
+  font-size:90%;
 }
 </style>
 
@@ -56,17 +56,18 @@ color: #1a6ecc;
 library(readxl)         # read data file
 library(dplyr)          # data manipulation
 library(highcharter)    # produce chart  
-library(knitr)          # produce html table
-library(formattable)
+library(formattable)    # produce html table
 library(DT)             # produce html table
-library(shinyBS)
-library(shinyjqui)
+library(shinyBS)        # info message 
+#library(shinyjqui)
 
-fake_dt <- read_excel("Analyst_Lab_Data 2.xls")     # fake lab data
-true_dt <- read_excel("Population_Data 2.xls")      # real population data
+fake_dt <- read_excel("Analyst_Lab_Data 2.xls")     # fake lab data (n = 9758)
+true_dt <- read_excel("Population_Data 2.xls")      # real population data (n = 8608)
 names(true_dt)[2] <- "SA22018_V1_00"                # rename SA22018_V1_00_NAME for merging purpose
 # combine fake data and real data together, joined by SA22018_V1_00 and Ethnicity
 # data excluding those that replied "Unknown" for Ethnicity (n = 1656 observations)
+# nrow(fake_dt[fake_dt$Ethnicity == "Unknown",])
+# n = 8102
 full_dt <- merge(fake_dt, true_dt, by = c("SA22018_V1_00", "Ethnicity"))
 
 full_dt$Census_2019_Population_Estimate <- round(full_dt$Census_2019_Population_Estimate)
@@ -107,7 +108,7 @@ region_data <- data.frame(cbind(Region = levels(full_dt$TA2018_V1_00_NAME),
                      Island = island))
 
 selectInput(inputId = "Location", 
-            label = h5("Terriotal Authority"), 
+            label = h5("Territorial Authority"), 
             choices = split(region_data$Region, region_data$Island),
             selected = "Whangarei District")
 ```
@@ -117,7 +118,7 @@ Key definitions:
 <hr>
 
 <div style = "font-size: 85%; margin-bottom:30px;">
-$\star$ **Priotised Ethnicity** - "each person being allocated to a SINGLE ethnic group based on the ethnic groups they have identified with". The order is followed by Māori, Pacific, Asian and Other.
+$\star$ **Prioritised Ethnicity** - *"each person being allocated to a SINGLE ethnic group based on the ethnic groups they have identified with"*. The order is followed by Māori, Pacific, Asian and Other.
 
 $\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas in New Zealand and vice versa.
 
@@ -126,10 +127,22 @@ $\star$ **Population Estimate** - this is based on 2019 Census population estima
 </div>
 
 ```{r}
+actionLink(inputId = "info", "Click for instructions on how to read the bubble chart on the right", style='font-size:85%;font-weight:bold; text-decoration:underline;', icon = icon("info"))
+
 bsAlert(anchorId = "Info")
+
+observeEvent(input$info, {
+  createAlert(session, anchorId = "Info", title = "Please read", 
+              content = HTML("<div class = alert-info role = alert style = 'text-align:left;'>
+               <b>1. This chart plots Number of tests against population estimates at SA2 levels <br>
+               1. Labels of the bubbles are described by Statistic Area 2 (SA2) codes <br>
+               2. Sizes of the bubbles correspond to NZ Deprivation Index values, where the bigger the bubble the higher the index.
+                </b></div>"), append = FALSE, style = "info")
+  #jqui_draggable(selector = '.alert-info')
+})
 ```
 
-Limitations of data analysis:
+<div style = "margin-top:30px";">Limitations of data analysis:</div>
 <hr>
 
 <div style = "font-size: 85%;">
@@ -140,7 +153,6 @@ $\star$ The period of time for when the cumulative number of tests are assumed t
 
 </div>
 
-<div style = "margin-bottom:120px"></div>
 
 <footer>
 <span style="font-size:12px;">*Start date: <span style="font-size:12px;">13$^{th}$ October, 2020*</span>
@@ -185,7 +197,7 @@ renderHighchart({
              lineColor = "black", lineWidth = 1, reversedStacks = FALSE,
              labels = list(formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}"))) %>%
     hc_xAxis(categories = levels(data$Ethnicity), 
-           title = list(text = "Priotised Ethnicity group", 
+           title = list(text = "Prioritised Ethnicity group", 
                         style = list(fontWeight = 'bold')),
            lineColor = "black") %>%
   hc_plotOptions(column = list(
@@ -193,7 +205,7 @@ renderHighchart({
     borderColor = "#5ab1ef",
     borderWidth = 2,
     enableMouseTracking = TRUE)) 
-  #%>% hc_size(height = 200)
+  
   # Loop through each sub-Region/Area levels
   for(i in 1:length(levels(data$Area))){
     lvl <- levels(data$Area)[i]
@@ -206,21 +218,24 @@ renderHighchart({
     }else{
       hc <- hc_add_series(hc, data = da, name = lvl, visible = FALSE)
     }
-}
+  }
+  
 hc <- hc %>%
   hc_tooltip(
     useHTML = TRUE,
     formatter= JS("function () {
-  return  '<span style =\"color:#1a6ecc\">' +  '\u25CF ' +  '<b>' + this.x + '</b>'  + '</span>' + 
-  '<br /> <b>Area: </b>' + this.series.name  +
-  '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
-  '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.pop, -1, '.', ',') + ' persons' +
-  '<br /> <b>NZ Deprivation Index:</b> ' + this.point.name}")) %>%
+    var color = {Māori:'#5ac8c8', Pacific:'#ff83c1', Asian:'#8c63aa', Other:'#7cb5ec'}
+    return  '<span style =\"color:' + color[this.x] + ';\">' +  '\u25CF ' +  '<b>' + this.x + '</b>'  + '</span>' + 
+    '<br /> <b>Area: </b>' + this.series.name  +
+    '<br /> <b>Number of tests:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' tests' +
+    '<br /> <b>Population estimate:</b> ' + Highcharts.numberFormat(this.point.pop, -1, '.', ',') + ' persons' +
+    '<br /> <b>NZ Deprivation Index:</b> ' + this.point.name }")) %>%
   hc_legend(
     title = list(text = "Area <span style='font-size:9px; color: #666; font-weight:bold;'>(Click on dots to hide/show)</span>"),
     align = "left",
     verticalAlign = "top",
     layout = "vertical") 
+
 hc
 })
 ```
@@ -232,30 +247,19 @@ Row {data-height=650}
 
 ### **Bubble Chart** 
 ```{r}
-actionLink(inputId = "info", "Click for instructions on how to read the bubble chart", style='font-size:80%;font-weight:bold;')
-
-observeEvent(input$info, {
-  createAlert(session, anchorId = "Info", title = "Please read", 
-              content = HTML("<div class = alert-info role = alert style = 'text-align:left;'>
-               1. Labels of the bubbles represent Statistic Area 2 (SA2) codes <br>
-               2. Sizes of the bubbles correspond to NZ Deprivation Index values, where the bigger the bubble the higher the index.
-                </o></div>"), append = FALSE, style = "info")
-  #jqui_draggable(selector = '.alert-info')
-})
-
 renderHighchart({
  data <- reactive_data()
  names(data) <- c("name", "Ethnicity", "z", "Area", "y", "x")
  
  highchart() %>%
-  hc_chart(type = "bubble", plotBorderWidth = 1, height = 350) %>%
+  hc_chart(type = "bubble", plotBorderWidth = 1) %>%
   hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
                 marker = list(enabled = FALSE),
                 events = list(legendItemClick = JS("function() {return false;}"))) %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Māori", ]), color = "#5ac8c8", name = "Māori") %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Pacific", ]), color = "#ff83c1", name = "Pacific", visible = FALSE) %>%
   hc_add_series(data = list_parse(data[data$Ethnicity == "Asian", ]), color = "#8c63aa", name = "Asian", visible = FALSE) %>%
-  hc_add_series(data = list_parse(data[data$Ethnicity == "Other", ]),  name = "Other", visible = FALSE) %>%
+  hc_add_series(data = list_parse(data[data$Ethnicity == "Other", ]), name = "Other", visible = FALSE) %>%
   hc_xAxis(title = list(text = 'Population estimate (persons)', 
                         style = list(fontWeight = 'bold')),
            labels = list(style = list(fontSize = '9px'),
@@ -284,8 +288,8 @@ renderHighchart({
      layout = 'horizontal',
      align =  'center',
      verticalAlign ='top',
-     floating = TRUE
-  ) 
+     floating = TRUE) 
+   #hc_size(height = 250)
 })
 ```
 
@@ -296,9 +300,15 @@ renderHighchart({
 ```{r}
 table_data <- reactive({
   data <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
+  
+  # filter data
   subset_data <- data[which(data$Number_of_Tests < data$Census_2019_Population_Estimate & data$SA2_average_NZDep2018 > 5),]
+  
   subset_data <- subset_data[,!(names(subset_data) %in% c("SA22018_V1_00", "SA2_average_NZDep2018_score"))]
-  subset_data <- subset_data %>% mutate(Rate = Number_of_Tests/Census_2019_Population_Estimate) %>% select(SA22018_V1_00_NAME, Ethnicity, SA2_average_NZDep2018, Number_of_Tests, Census_2019_Population_Estimate, Rate)
+  
+  subset_data <- subset_data %>% 
+    mutate(Rate = Number_of_Tests/Census_2019_Population_Estimate) %>%
+    select(SA22018_V1_00_NAME, Ethnicity, SA2_average_NZDep2018, Number_of_Tests, Census_2019_Population_Estimate, Rate)
   
   subset_data
 })
@@ -314,6 +324,7 @@ custom_color_tile <- function (...){
                       `background-color` = ifelse(data$Rate < 0.2, "#B1CBEB", "none")))
 }
 
+# bottom caption
 js <- c(
   "function(settings){",
   "  var datatable = settings.oInstance.api();",
@@ -338,7 +349,7 @@ DT::renderDataTable({
      rownames = FALSE,
      colnames = c('Area', 'Ethnicity', 'NZDep', 'Total tests', 'Population estimate', 'Test rate per 100 persons'),
      caption = tags$caption(
-        style = "color:black; margin:0 0 -15px 0; font-size:11.5px;",
+        style = "color:black; margin:0 0 -15px 0; font-size:90%;",
         tags$span("Table summarising filtered testing data where the number of tests are smaller than the population estimates with a NZDep larger than 5 and grouped by ethnicity at SA2 levels, for"), tags$span(input$Location, style = 'color:#1a6ecc;font-weight:bold;')),
      options = list(
        drawCallback = JS(js),
