@@ -1,9 +1,27 @@
 ---
-title: "*New Zealand's COVID-19 testing dashboard for Ministry of Health*"
-output: 
+title: '*New Zealand''s COVID-19 testing dashboard for Ministry of Health*'
+resource_files:
+- 2018-SA1-dataset-dwellings-AucklandRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-BayofPlentyRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-CanterburyRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-GisborneRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-Hawke'sBayRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-Manawatu-WanganuiRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-MarlboroughRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-NelsonRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-OtagoRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-NorthlandRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-SouthlandRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-TaranakiRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-TasmanRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-WaikatoRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-WellingtonRegion_updated_11-6-20.xlsx
+- 2018-SA1-dataset-dwellings-WestCoastRegion_updated_11-6-20.xlsx
+runtime: shiny
+output:
   flexdashboard::flex_dashboard:
     orientation: rows
-runtime: shiny
+    #css: www/theme-dark.css
 ---
 
 <style>
@@ -18,7 +36,7 @@ margin-left:220px !important;
     text-align:center;
 }
 
-body, h1, h2, h3, h4, h5, h6{
+body, label, input, button, select, box, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5{
   font-family: Helvetica;
 }
 
@@ -49,6 +67,12 @@ color: #1a6ecc;
   font-size:bold;
   font-size:90%;
 }
+
+<!-- .first-box { -->
+<!--   background-color: blue; -->
+<!--   color: white; -->
+<!-- } -->
+
 </style>
 
 
@@ -87,6 +111,23 @@ $\star$ **Population Estimate** - this is based on 2019 Census population estima
 
 
 ```{r}
+current_theme <- reactiveVal(FALSE)
+
+renderUI({
+  checkboxInput(inputId = "style", label = "Dark theme", value = current_theme())
+})
+
+renderUI({
+  if (!is.null(input$style)) {
+      current_theme(input$style)
+      if(input$style){
+        includeCSS("www/theme-dark.css")
+      }else{
+        includeCSS("www/theme-light.css")
+      }
+    }
+})
+
 actionLink(inputId = "info", "Click for instructions on how to read the bubble chart on the right", style='font-size:85%;font-weight:bold; text-decoration:underline;', icon = icon("info"))
 
 bsAlert(anchorId = "Info")
@@ -123,9 +164,9 @@ Row
 -----------------------------------------------------------------------
 
 
-### **Stacked Bar Chart** 
+### **Stacked Bar Chart** {.first-box}
 
-<div style="font-size:85%;">This bar chart displays the number of tests taken per day for each Ethnicity group at sub-Region/Area level within Districts/Cities (Input). Hover over each bar for more information.</div>
+<div style="font-size:85%;">This bar chart displays the number of tests for each Ethnicity group at sub-Region/Area level within Districts/Cities (Input). Hover over each bar for more information.</div>
 
 
 ```{r}
@@ -198,6 +239,12 @@ hc <- hc %>%
     align = "left",
     verticalAlign = "top",
     layout = "vertical") 
+  
+ if(isTRUE(input$style)){
+   hc <- hc %>% hc_add_theme(hc_theme_flatdark())
+ } else {
+    hc <- hc
+ }
 
 hc
 })
