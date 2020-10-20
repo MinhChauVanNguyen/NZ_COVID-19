@@ -296,7 +296,6 @@ renderHighchart({
 
 ### **Table**
 
-
 ```{r}
 table_data <- reactive({
   data <- full_dt[full_dt$TA2018_V1_00_NAME == input$Location,]
