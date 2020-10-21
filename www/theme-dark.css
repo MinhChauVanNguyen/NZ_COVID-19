@@ -38,7 +38,6 @@ body {
   color:white;
 }
 
-
 /* Shiny select input */
 
 .selectize-input .item {
@@ -91,6 +90,24 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
 #info {
   color:#00CCFF !important;
 }
+
+/*link*/
+a:link {
+  color:#33CCFF !important;
+}
+
+/* mouse over link */
+a:hover {
+  color:#99FFFF;
+}
+
+.alert-info {
+  background-color:#2f7ed8;
+  color:white;
+  font-size:bold;
+  font-size:90%;
+}
+
 
 
 

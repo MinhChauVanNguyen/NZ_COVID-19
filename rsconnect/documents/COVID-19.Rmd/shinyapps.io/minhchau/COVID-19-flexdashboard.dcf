@@ -5,9 +5,8 @@ account: minhchau
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3054045
-bundleId: 3760783
+bundleId: 3765346
 url: https://minhchau.shinyapps.io/COVID-19-flexdashboard/
-when: 1603163656.22088
+when: 1603261970.12464
 asMultiple: FALSE
 asStatic: FALSE
-additionalFiles: 2018-SA1-dataset-dwellings-AucklandRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-BayofPlentyRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-CanterburyRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-GisborneRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-Hawke'sBayRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-Manawatu-WanganuiRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-MarlboroughRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-NelsonRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-OtagoRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-NorthlandRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-SouthlandRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-TaranakiRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-TasmanRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-WaikatoRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-WellingtonRegion_updated_11-6-20.xlsx|2018-SA1-dataset-dwellings-WestCoastRegion_updated_11-6-20.xlsx

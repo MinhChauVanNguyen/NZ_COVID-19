@@ -33,3 +33,11 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
   font-weight:500;
 }
 
+.alert-info {
+  background-color:#1a6ecc;
+  color:white;
+  font-size:bold;
+  font-size:90%;
+}
+
+

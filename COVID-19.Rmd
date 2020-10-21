@@ -1,5 +1,5 @@
 ---
-title: 'New Zealand''s COVID-19 testing dashboard for Ministry of Health'
+title: 'New Zealand''s fictitious COVID-19 data dashboard'
 resource_files:
 - 2018-SA1-dataset-dwellings-AucklandRegion_updated_11-6-20.xlsx
 - 2018-SA1-dataset-dwellings-BayofPlentyRegion_updated_11-6-20.xlsx
@@ -21,7 +21,6 @@ runtime: shiny
 output:
   flexdashboard::flex_dashboard:
     orientation: rows
-    #css: www/theme-dark.css
 ---
 
 <style>
@@ -51,24 +50,7 @@ table.dataTable  {
 
 .shiny-input-container > label {
   margin-bottom: -15px;
-  margin-top:5px;
 }
-
-.alert-info {
-  background-color:#042f66;
-  color:white;
-  font-size:bold;
-  font-size:90%;
-}
-
-.selectize-input .item {
-color: #1a6ecc;
-}
-<!-- .first-box { -->
-<!--   background-color: blue; -->
-<!--   color: white; -->
-<!-- } -->
-
 </style>
 
 <script>
@@ -88,44 +70,34 @@ color: #1a6ecc;
 }(Highcharts));
 </script>
 
+    
 ```{r setup, include=FALSE}
 library(dplyr)          # data manipulation
 library(highcharter)    # produce chart  
 library(formattable)    # produce html table
 library(DT)             # produce html table
 library(shinyBS)        # info message 
+library(shinyWidgets)
 
 source("data_cleaning.R")
 source("hc_theme_dark.R")
 ```
 
 
+
 Inputs {.sidebar}
 -----------------------------------------------------------------------
+
+<div style = "margin-top:-10px;">
 ```{r}
 selectInput(inputId = "Location", 
-            label = h5("Territorial Authority"), 
+            label = "Territorial Authority", 
             choices = levels(full_data$TA2018_Name),
             selected = "Whangarei District")
-```
 
-Abstract
-
-<hr>
-
-<div style = "font-size: 85%; margin-bottom:30px;">
-
-The dashboard displays graphs of made-up COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). The data consists of other features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). For information on the algorithms used for generating random numbers for the population by Ethnicity based on the given Total population by SA2, please refer to the [following](https://github.com/MinhChauVanNguyen/NZ_COVID-19/blob/master/data_cleaning.R).
-
-</div>
-
-
-
-```{r}
 #current_theme <- reactiveVal(TRUE)
-
 renderUI({
-  checkboxInput(inputId = "style", label = "Dark mode activated", value = TRUE)
+  materialSwitch(inputId = "style", label = "Dark mode activated", value = TRUE)
 })
 
 observeEvent(input$style,{
@@ -147,7 +119,23 @@ renderUI({
   }
    # }
 })
+```
+</div>
 
+<div style = "margin-top:10px;"></div>
+Abstract
+
+<hr>
+
+<div style = "font-size: 85%; margin-bottom:20px;">
+
+The dashboard displays graphs of made-up COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). The data consists of other features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). For information on the algorithms used for generating random numbers for the population by Ethnicity based on the given Total population by SA2, please refer to the [following](https://github.com/MinhChauVanNguyen/NZ_COVID-19/blob/master/data_cleaning.R).
+
+</div>
+
+
+
+```{r}
 actionLink(inputId = "info", 
            label = "Click for instructions on how to read the bubble chart on the right",
            style = 'font-size:85%;font-weight:bold; text-decoration:underline;', 
@@ -167,10 +155,12 @@ observeEvent(input$info, {
 ```
 
 
+<div style = "font-size: 85%; margin-top:20px;"></div>
+
 Key definitions:
 
 <hr>
-<div style = "font-size: 85%; margin-bottom:30px;">
+<div style = "font-size: 85%; margin-bottom:20px;">
 $\star$ **Prioritised Ethnicity** - *"each person being allocated to a SINGLE ethnic group based on the ethnic groups they have identified with"*. The order is followed by Māori, Pacific, Asian and Other.
 
 $\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas in New Zealand and vice versa.
@@ -188,7 +178,7 @@ Row
 
 ### **Stacked Bar Chart** {.dark-box}
 
-<div style="font-size:85%;">This bar chart displays the number of tests for each Ethnicity group at sub-Region/Area level within Districts/Cities (Input). Hover over each bar for more information.</div>
+<div style="font-size:85%;">This bar chart displays the number of cases for each Ethnicity group at SA2 level within Districts/Cities (Input). Hover over each bar for more information.</div>
 
 
 ```{r}
@@ -217,21 +207,22 @@ renderHighchart({
   data$Area <- factor(data$Area)
   
   hc <- highchart() %>%
-    hc_chart(type = "column", height = 350, inverted = TRUE, style = list(fontFamily = "Helvetica")) %>%
-    hc_yAxis(title = list(text = "Number of confirmed positive cases", 
+     hc_yAxis(title = list(text = "Number of confirmed positive cases", 
                           style = list(fontWeight = 'bold')),
-             lineWidth = 1, reversedStacks = FALSE,
+             lineWidth = 1, reversedStacks = FALSE, tickColor = "white",
              labels = list(formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}"))) %>%
+    hc_chart(type = "column", height = 350, inverted = TRUE, style = list(fontFamily = "Helvetica")) %>% 
     hc_xAxis(categories = levels(data$Ethnicity), 
            title = list(text = "Prioritised Ethnicity group", 
-                        lineWidth = 1, lineColor = "black",
-                        style = list(fontWeight = 'bold'))) %>%
+                        style = list(fontWeight = 'bold')),
+           lineWidth = 1
+           ) %>%
     hc_plotOptions(
-    column = list(
-      stacking = "normal",
-      borderColor = "#5ab1ef",
-      borderWidth = 2,
-      enableMouseTracking = TRUE)) 
+      column = list(
+        stacking = "normal",
+        borderColor = "#5ab1ef",
+        borderWidth = 2,
+        enableMouseTracking = TRUE)) 
   
   # Loop through each sub-Region/Area levels
   for(i in 1:length(levels(data$Area))){
@@ -248,7 +239,7 @@ renderHighchart({
   }
 
   cols <-  c('#2f7ed8', '#ff99cc', '#8bbc21', '#00cc99', '#1aadce',
-        '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a')
+        '#ff9966', '#ffff00', '#77a1e5', '#9999ff', '#a6c96a')
   
 hc <- hc %>%
   hc_colors(cols) %>%
@@ -291,7 +282,7 @@ hc <- hc %>%
       hc_add_theme(hc_light_theme())
  }
 
-hc
+hc %>% hc_xAxis(tickColor = "none")
 })
 ```
 
@@ -300,6 +291,7 @@ Row {data-height=650}
 -----------------------------------------------------------------------
 
 ### **Bubble Chart** {.dark-box}
+
 ```{r}
 renderHighchart({
  data <- reactive_data()
@@ -315,7 +307,7 @@ if(isTRUE(input$style)){
                 marker = list(enabled = FALSE),
                 events = list(legendItemClick = JS("function() {return false;}")))
 } else {
-  hc <- hc %>%   hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
+  hc <- hc %>%  hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
                  marker = list(enabled = FALSE),
                  events = list(legendItemClick = JS("function() {return false;}")))
 }
@@ -360,12 +352,13 @@ if(isTRUE(input$style)){
       style = list(
         color = "white"
       )
-  )
+  ) 
 } else {
-  hc <- hc
+  hc <- hc 
 }
 
-hc
+hc 
+
 })
 ```
 
@@ -441,17 +434,16 @@ DT::renderDataTable({
   data$Incidence <- percent2(data$Incidence, 1)
   
   if(isTRUE(input$style)){
-      my_table <- return(as.datatable(
+    my_table <- return(as.datatable(
      data, 
      fillContainer = TRUE,
      rownames = FALSE,
      colnames = c('Area', 'NZDep', 'Ethnicity', 'Population', 'Cases', 'Incidence rate*'),
      caption = tags$caption(
         tags$span("Table summarising filtered data where the incidence rate are larger than 5% (or 5 cases per 1000 persons-month) for", style = "color:white; margin:0 0 0 0; font-size:90%;"), tags$span(paste(input$Location, "."), style = 'color:#00CCFF;font-weight:bold; font-size:90%'), tags$br(),
-        tags$span("*Rows highlighted in blue indicating the rates are extreme - more than 50 cases per 1000 persons-month.", style = "color:#2f7ed8;font-size:85%;font-style:italic;")
+        tags$span("*Rows highlighted in blue indicating the rates are extreme - more than 50 cases per 1000 persons-month.", style = "color:#33CCFF;font-size:85%;font-style:italic;")
         ),
      options = list(
-       #drawCallback = JS(js),
        searching = FALSE, paging = FALSE, lengthChange = FALSE, bInfo = FALSE,
        columnDefs = list(list(className = 'dt-left', targets = "_all")))
     ) %>%

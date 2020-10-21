@@ -9,8 +9,8 @@ hc_dark_theme <- function(...) {
           color = "#FFFFFF"
         )
       ),
+      tickColor = 'none',
       gridLineColor = "#46627f",
-      #tickColor = "#46627f",
       lineColor = "#FFFFFF",
       title = list(
         style = list(
@@ -24,9 +24,10 @@ hc_dark_theme <- function(...) {
           color = "#FFFFFF"
         )
       ),
+      tickColor = "none",
+      minorTickColor = "white",
       gridLineColor = "#46627f",
       lineColor = "#FFFFFF",
-      tickColor = "#FFFFFF",
       title = list(
         style = list(
           color = "#FFFFFF"
@@ -55,6 +56,7 @@ hc_dark_theme <- function(...) {
   
   theme
 }
+
 
 hc_light_theme <- function(...) {
   theme <- hc_theme(
