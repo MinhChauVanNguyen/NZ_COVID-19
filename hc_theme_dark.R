@@ -1,12 +1,17 @@
-hc_theme_flatdark <- function(...) {
-  theme <- hc_theme_flat(
+hc_dark_theme <- function(...) {
+  theme <- hc_theme(
     chart = list(
       backgroundColor = "#34495e"
     ),
     xAxis = list(
+      labels = list(
+        style = list(
+          color = "#FFFFFF"
+        )
+      ),
       gridLineColor = "#46627f",
-      tickColor = "#46627f",
-      lineColor = "#46627f",
+      #tickColor = "#46627f",
+      lineColor = "#FFFFFF",
       title = list(
         style = list(
           color = "#FFFFFF"
@@ -14,33 +19,29 @@ hc_theme_flatdark <- function(...) {
       )
     ),
     yAxis = list(
+      labels = list(
+        style = list(
+          color = "#FFFFFF"
+        )
+      ),
       gridLineColor = "#46627f",
-      tickColor = "#46627f",
+      lineColor = "#FFFFFF",
+      tickColor = "#FFFFFF",
       title = list(
         style = list(
           color = "#FFFFFF"
         )
       )
     ),
-    title = list(
-      style = list(
-        color = "#FFFFFF"
-      )
-    ),
-    subtitle = list(
-      style = list(
-        color = "#666666"
-      )
-    ),
     legend = list(
       itemStyle = list(
-        color = "#C0C0C0"
+        color = "#FFFFFF"
       ),
       itemHoverStyle = list(
-        color = "#C0C0C0"
+        color = "cyan"
       ),
       itemHiddenStyle = list(
-        color = "#444444"
+        color = "gray"
       )
     )
   )
@@ -54,3 +55,28 @@ hc_theme_flatdark <- function(...) {
   
   theme
 }
+
+hc_light_theme <- function(...) {
+  theme <- hc_theme(
+    chart = list(
+      backgroundColor = "none"
+    ),
+    xAxis = list(
+      lineColor = "black"
+    ),
+    yAxis = list(
+      lineColor = "black"
+    )
+  )
+  
+  if (length(list(...)) > 0) {
+    theme <- hc_theme_merge(
+      theme,
+      hc_theme(...)
+    )
+  }
+  
+  theme
+}
+
+

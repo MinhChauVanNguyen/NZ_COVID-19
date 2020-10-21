@@ -11,35 +11,25 @@ body {
   color: #f9f9f9;
 }
 
-.bg-primary {
-  background-color: rgba(39, 128, 227, 0.7);
+.selectize-input .item {
+  color: #1a6ecc;
 }
 
-.nav-tabs-custom > .nav-tabs > li.active {
-  border-top-color: rgba(39, 128, 227, 0.7);
+/* Table */
+table {
+  border: 1px solid #CCC;
+  border-collapse: collapse;
 }
 
-.bg-info {
-  background-color: rgba(153, 84, 187, 0.7);
+td {
+    border: none !important;
 }
 
-.bg-warning {
-  background-color: rgba(255, 117, 24, 0.7);
-}
-
-.bg-danger {
-  background-color: rgba(255, 0, 57, 0.7);
-}
-
-.bg-success {
-  background-color: rgba(63, 182, 24, 0.7);
+table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
+  background-color: rgba(223, 177, 214, 0.5) !important;
 }
 
 .chart-title {
-  font-weight: 500;
+  font-weight:500;
 }
 
-.nav-tabs-custom > .nav-tabs > li > a,
-.nav-tabs-custom > .nav-tabs > li > a:active {
-  font-weight: 500;
-}
