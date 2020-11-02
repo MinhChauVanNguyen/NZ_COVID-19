@@ -5,6 +5,6 @@ account: minhchau
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3054045
-bundleId: 3776263
+bundleId: 3809145
 url: https://minhchau.shinyapps.io/COVID-19-flexdashboard/
-when: 1603499049.0098
+when: 1604297243.71916

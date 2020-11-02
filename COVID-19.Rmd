@@ -1,5 +1,5 @@
 ---
-title: 'New Zealand''s fictitious COVID-19 data dashboard'
+title: 'New Zealand''s fictitious COVID-19 flexdashboard'
 resource_files:
 - 2018-SA1-dataset-dwellings-AucklandRegion_updated_11-6-20.xlsx
 - 2018-SA1-dataset-dwellings-BayofPlentyRegion_updated_11-6-20.xlsx
@@ -127,7 +127,7 @@ Abstract
 
 <div style = "font-size: 85%; margin-bottom:20px;">
 
-The dashboard displays graphs of COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). In addition to the **made up** number of people by Ethnicity and number of cases by Ethnicity features, the data has features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). 
+The dashboard displays graphs of COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). In addition to the [made up](https://github.com/MinhChauVanNguyen/NZ_COVID-19/blob/master/data_cleaning.R) number of people by Ethnicity and number of cases by Ethnicity features, the data has features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). 
 
 </div>
 
