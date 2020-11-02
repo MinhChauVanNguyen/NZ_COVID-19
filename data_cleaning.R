@@ -28,7 +28,7 @@ names(NZ_Dep) <- c("SA22018_Code", "SA22018_Name", "SA22018_NZDep", "SA22018_Tot
 
 # combine the data 
 full_data <- merge(regional_data, NZ_Dep, by = c("SA22018_Code", "SA22018_Name"))
-full_data <- unique(full_data[ , 1:6])   # remove duplicates
+full_data <- unique(full_data[ , 1:6])   # remove duplicates, n = 2078
 
 # remove data where total population equals to 0
 full_data <- full_data[!(full_data$SA22018_Total_Pop == 0), ]
@@ -79,10 +79,12 @@ for(i in 1:length(full_data$Population_by_Ethnicity)){
 
 full_data <- replace(full_data, is.na(full_data), 0)
 
-#unique(full_data$Region)
 
 full_data$Region[full_data$Region == "Manawatu-Wanganui Region"] <- "Manawatū-Whanganui Region"
 
 full_data$Ethnicity <- factor(full_data$Ethnicity, levels = c("Māori", "Pacific", "Asian", "Other"))
 
 full_data$TA2018_Name <- factor(full_data$TA2018_Name)
+
+full_data$SA22018_NZDep[full_data$SA22018_NZDep == 0] <- "NA"
+

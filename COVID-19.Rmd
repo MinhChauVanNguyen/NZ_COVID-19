@@ -21,6 +21,8 @@ runtime: shiny
 output:
   flexdashboard::flex_dashboard:
     orientation: rows
+    #navbar:
+     # - { icon: "fa-github", href: "https://google.com", align: right }
 ---
 
 <style>
@@ -33,17 +35,13 @@ font-weight:bold;
   opacity: 0.6;
 }
 
-.shiny-output-error-validation {
-    color: #ff0000;
-    font-weight: bold;
-    margin-top:10px;
-    text-align:center;
-}
-
 body, label, input, button, select, box, .h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5{
   font-family: Helvetica;
 }
 
+.caption1 {
+font-size:90%;
+}
 table.dataTable  {
   font-size: 90%;
 }
@@ -129,7 +127,7 @@ Abstract
 
 <div style = "font-size: 85%; margin-bottom:20px;">
 
-The dashboard displays graphs of made-up COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). The data consists of other features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). For information on the algorithms used for generating random numbers for the population by Ethnicity based on the given Total population by SA2, please refer to the [following](https://github.com/MinhChauVanNguyen/NZ_COVID-19/blob/master/data_cleaning.R).
+The dashboard displays graphs of COVID-19 (number of new positive confirmed cases within 6 months) data recorded at Statistical Area 2 (SA22018) level of geography by [Prioritised Ethnicity](https://www.moh.govt.nz/notebook/nbbooks.nsf/0/4b1c9119d4e5ea78cc257488000d9324/$FILE/presenting-ethnicity-2008.pdf). In addition to the **made up** number of people by Ethnicity and number of cases by Ethnicity features, the data has features that are based on real information, such as [Population estimates by SA2](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020) and [New Zealand Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html). 
 
 </div>
 
@@ -138,7 +136,7 @@ The dashboard displays graphs of made-up COVID-19 (number of new positive confir
 ```{r}
 actionLink(inputId = "info", 
            label = "Click for instructions on how to read the bubble chart on the right",
-           style = 'font-size:85%;font-weight:bold; text-decoration:underline;', 
+           style = 'font-size:85%;font-weight:bold; text-decoration:underline;',
            icon = icon("info"))
 
 bsAlert(anchorId = "Info")
@@ -146,7 +144,7 @@ bsAlert(anchorId = "Info")
 observeEvent(input$info, {
   createAlert(session, anchorId = "Info", title = "Please read", 
               content = HTML("<div class = alert-info role = alert style = 'text-align:left;'>
-               <b>1. This chart plots Number of tests against population estimates at SA2 levels <br>
+               <b>1. This chart plots Number of cases against total population by Ethnicity at SA2 levels <br>
                1. Labels of the bubbles are described by Statistic Area 2 (SA2) codes <br>
                2. Sizes of the bubbles correspond to NZ Deprivation Index values, where the bigger the bubble the higher the index.
                 </b></div>"), append = FALSE, style = "info")
@@ -163,7 +161,7 @@ Key definitions:
 <div style = "font-size: 85%; margin-bottom:20px;">
 $\star$ **Prioritised Ethnicity** - *"each person being allocated to a SINGLE ethnic group based on the ethnic groups they have identified with"*. The order is followed by Māori, Pacific, Asian and Other.
 
-$\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas in New Zealand and vice versa.
+$\star$ **NZ Deprivation Index** - describes New Zealand's least to most deprived areas. A value of 10 on the scale of deprivation indicates that the area is in the most deprived areas and vice versa. It is important to note that the data does contain some missing information regarding the Deprivation Index (n = 124 observations) which are shown as *NA* in the stacked bar graph and table, and excluded from the bubble chart. 
 </div>
 
 
@@ -178,7 +176,7 @@ Row
 
 ### **Stacked Bar Chart** {.dark-box}
 
-<div style="font-size:85%;">This bar chart displays the number of cases for each Ethnicity group at SA2 level within Districts/Cities (Input). Hover over each bar for more information.</div>
+<div style="font-size:85%;">This bar chart plots the number of positive confirmed cases within 6 months for each Ethnicity group at SA2 level. Hover over each bar for more information.</div>
 
 
 ```{r}
@@ -211,12 +209,12 @@ renderHighchart({
                           style = list(fontWeight = 'bold')),
              lineWidth = 1, reversedStacks = FALSE, tickColor = "white",
              labels = list(formatter = JS("function () {  return Highcharts.numberFormat(this.value, 0, '.', ',');}"))) %>%
-    hc_chart(type = "column", height = 350, inverted = TRUE, style = list(fontFamily = "Helvetica")) %>% 
+    hc_chart(type = "column", height = 350, inverted = TRUE, 
+             style = list(fontFamily = "Helvetica")) %>% 
     hc_xAxis(categories = levels(data$Ethnicity), 
            title = list(text = "Prioritised Ethnicity group", 
                         style = list(fontWeight = 'bold')),
-           lineWidth = 1
-           ) %>%
+           lineWidth = 1) %>%
     hc_plotOptions(
       column = list(
         stacking = "normal",
@@ -238,15 +236,16 @@ renderHighchart({
     }
   }
 
-  cols <-  c('#2f7ed8', '#ff99cc', '#8bbc21', '#00cc99', '#1aadce',
-        '#ff9966', '#ffff00', '#77a1e5', '#9999ff', '#a6c96a')
+  cols <-  c('#2f7ed8', '#ff99cc', '#00cc99', '#1aadce',
+             '#ff9966', '#ffff00', '#77a1e5', '#9999ff', '#0099CC',
+             '#CC66FF', '#ff6699', '#ffccff', '#0099FF', '#FF0099')
   
 hc <- hc %>%
   hc_colors(cols) %>%
   hc_tooltip(
     useHTML = TRUE,
     formatter= JS("function () {
-    var color = {Māori:'#5ac8c8', Pacific:'#ff83c1', Asian:'#7cb5ec', Other:'ff6699'}
+    var color = {Māori:'#5ac8c8', Pacific:'#ff83c1', Asian:'#7cb5ec', Other:'#FF6699'}
     return  '<span style =\"color:' + color[this.x] + ';\">' +  '\u25CF ' +  '<b>' + this.x + '</b>'  + '</span>' + 
     '<br /> <b>Area: </b>' + this.series.name  +
     '<br /> <b>Number of cases:</b> ' + Highcharts.numberFormat(this.point.y, -1, '.', ',') + ' cases' +
@@ -258,7 +257,6 @@ hc <- hc %>%
     layout = "vertical"
   )
 
-  
  if(isTRUE(input$style)){
    hc <- hc %>% hc_add_theme(hc_dark_theme()) %>%
      hc_legend(
@@ -298,16 +296,21 @@ renderHighchart({
  
  names(data) <- c("name", "Area", "z", "Ethnicity", "x", "y")
  
+ data <- data[!(data$z == "NA"),]
+ 
+ data$z <- as.numeric(data$z)
+ 
 hc <- highchart() %>%
-  hc_chart(type = "bubble", plotBorderWidth = 1)
+  hc_chart(type = "bubble", plotBorderWidth = 1, 
+           style = list(fontFamily = "Helvetica"))
 
 if(isTRUE(input$style)){
   hc <- hc %>% hc_add_series(name = '<span style = color:white;">Ethnicity</span><br/><span style="font-size:9px; color:pink; font-weight:bold;">(Click on dots to hide/show)</span>', 
                 color = 'none',
                 marker = list(enabled = FALSE),
                 events = list(legendItemClick = JS("function() {return false;}")))
-} else {
-  hc <- hc %>%  hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
+  } else {
+    hc <- hc %>%  hc_add_series(name = 'Ethnicity<br/><span style="font-size:9px; color:#666; font-weight:bold;">(Click on dots to hide/show)</span>', color = 'none',
                  marker = list(enabled = FALSE),
                  events = list(legendItemClick = JS("function() {return false;}")))
 }
@@ -375,96 +378,54 @@ table_data <- reactive({
   
   subset_data <- subset_data[which(subset_data$Incidence > 0.005),]
   
-    subset_data <- subset_data[,!(names(subset_data) %in% c("SA22018_Code", "Region", "SA22018_Total_Pop", "TA2018_Name"))]
+  subset_data <- subset_data[,!(names(subset_data) %in% c("SA22018_Code", "Region", "SA22018_Total_Pop", "TA2018_Name"))]
     
   subset_data
 })
 
-
-custom_dark <- function (...){
-    data <- table_data()
-    formatter("span",
-              style = function(x) 
-                style(display = "block", 
-                      padding = "0 4px", 
-                      `color` = "white", 
-                      `border-radius` = "4px", 
-                      `background-color` = ifelse(data$Incidence > 0.05, "#2f7ed8", "none")))
-}
-
-
-custom_light <- function (...){
-    data <- table_data()
-    formatter("span",
-              style = function(x) 
-                style(display = "block", 
-                      padding = "0 4px", 
-                      `color` = "black", 
-                      `border-radius` = "4px", 
-                      `background-color` = ifelse(data$Incidence > 0.05, "#B1CBEB", "none")))
-}
-
-
-percent2 <- function(x, digits = 2, format = "f", ...) {
-  paste0(formatC(1000 * x, format = format, digits = digits, ...), "%")
-}
-
-#bottom caption
-# js <- c(
-#   "function(settings){",
-#   "  var datatable = settings.oInstance.api();",
-#   "  var table = datatable.table().node();",
-#   "  var caption = '*Rows highlighted in blue indicating the rates are extreme - more than 50 cases per 1000 persons-month.'",
-#   "  $(table).append('<caption style=\"caption-side:bottom; text-align:left; font-size:11.5px;font-style:italic;color:#00CCFF;\">' + caption + '</caption>');",
-#   "}"
-# )
+custom_highlight <- function (dark_theme = TRUE){
+  data <- table_data()
+  formatter("span",
+            style = function(x) 
+              style(display = "block",
+                    padding = "0 4 px",
+                    `border-radius` = "4px",
+                    `color` = ifelse(dark_theme == TRUE, "white", "black"),
+                    `background-color` = 
+                      ifelse(dark_theme == TRUE  & data$Incidence > 0.05, "#2f7ed8", ifelse(dark_theme == FALSE & data$Incidence > 0.05, "#B1CBEB", "none"))))
+  }
+     
 
 DT::renderDataTable({
   
   validate(
-     need(nrow(table_data())>0, "Sorry, there is no data availale based on the indicated filter for this region.")
+     need(nrow(table_data())>0, "Sorry, there is no data availale based on the indicated filter for the selected district/city.")
    )
   
-  if(isTRUE(input$style)){
-     data <- table_data() %>% formattable(list(area(col = 1:6) ~ custom_dark()))
-  }else{
-     data <- table_data() %>% formattable(list(area(col = 1:6) ~ custom_light()))
-  }
-
-  data$Incidence <- percent2(data$Incidence, 1)
+  options <- list(
+       searching = FALSE, paging = FALSE, lengthChange = FALSE, bInfo = FALSE,
+       columnDefs = list(list(className = 'dt-left', targets = "_all")))
   
-  if(isTRUE(input$style)){
-    my_table <- return(as.datatable(
-     data, 
-     fillContainer = TRUE,
-     rownames = FALSE,
-     colnames = c('Area', 'NZDep', 'Ethnicity', 'Population', 'Cases', 'Incidence rate*'),
-     caption = tags$caption(
-        tags$span("Table summarising filtered data where the incidence rate are larger than 5% (or 5 cases per 1000 persons-month) for", style = "color:white; margin:0 0 0 0; font-size:90%;"), tags$span(paste(input$Location, "."), style = 'color:#00CCFF;font-weight:bold; font-size:90%'), tags$br(),
-        tags$span("*Rows highlighted in blue indicating the rates are extreme - more than 50 cases per 1000 persons-month.", style = "color:#33CCFF;font-size:85%;font-style:italic;")
-        ),
-     options = list(
-       searching = FALSE, paging = FALSE, lengthChange = FALSE, bInfo = FALSE,
-       columnDefs = list(list(className = 'dt-left', targets = "_all")))
-    ) %>%
-      formatStyle('SA22018_Name', target = 'row', 
-                  backgroundColor = "#34495e"))
-  }else{
-    my_table <- return(as.datatable(
-     data, 
-     fillContainer = TRUE,
-     rownames = FALSE,
-     colnames = c('Area', 'NZDep', 'Ethnicity', 'Population', 'Cases', 'Incidence rate*'),
-     caption = tags$caption(
-       tags$span("Table summarising filtered data where the incidence rate are larger than 5% (or 5 cases per 1000 persons-month) for", style = "color:black; margin:0 0 0 0; font-size:90%;"), tags$span(paste(input$Location, "."), style = 'color:#1a6ecc;font-weight:bold; font-size:90%'), tags$br(),
-        tags$span("*Rows highlighted in blue indicating the rates are extreme - more than 50 cases per 1000 persons-month.", style = "color:#1a6ecc;font-size:85%;font-style:italic;")
-        ),
-     options = list(
-       searching = FALSE, paging = FALSE, lengthChange = FALSE, bInfo = FALSE,
-       columnDefs = list(list(className = 'dt-left', targets = "_all")))
-    )
-    )  
-  }
+  data <- table_data() %>% 
+    formattable(list(
+      area(col = 1:6) ~ custom_highlight(ifelse(isTRUE(input$style), TRUE, FALSE))))
+     data$Incidence <- percent(data$Incidence, 1)
+  
+     my_table <- return(as.datatable(
+        data,
+        fillContainer = TRUE, rownames = FALSE,
+        colnames = c('Area', 'NZDep', 'Ethnicity', 'Population', 'Cases', 'Incidence rate*'),
+        options = options,
+        caption = tags$caption(
+            tags$span("Table summarising filtered data where the incidence rate are larger than 0.5% (or 5 cases per 100 persons-month) for", 
+                      class = "caption1"),
+            tags$span(paste(input$Location, "."), class = "location"),
+            tags$br(),
+            tags$span("*Rows highlighted in blue indicating the rates are extreme - more than 5 cases per 100 persons-month.", class = "caption2")
+        )) %>% formatStyle('SA22018_Name', target = 'row', 
+                  backgroundColor = ifelse(isTRUE(input$style), "#34495e", "none"))
+      )
+
   my_table
 })
 ```

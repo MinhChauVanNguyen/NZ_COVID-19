@@ -7,9 +7,6 @@ body {
   background-color: rgba(39, 128, 227, 0.1);
 }
 
-.value-box {
-  color: #f9f9f9;
-}
 
 .selectize-input .item {
   color: #1a6ecc;
@@ -40,4 +37,27 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover{
   font-size:90%;
 }
 
+.shiny-output-error-validation {
+    color: #ff0000;
+    font-weight: bold;
+    margin-top:10px;
+    text-align:center;
+}
 
+.caption1 {
+  color:black;
+  font-size:90%;
+  margin:0 0 0 0;
+}
+
+.location {
+  color:#1a6ecc;
+  font-weight:bold; 
+  font-size:90%
+}
+
+.caption2{
+  color:#FF6699;
+  font-size:85%;
+  font-style:italic;
+}

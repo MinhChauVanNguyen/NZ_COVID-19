@@ -108,7 +108,29 @@ a:hover {
   font-size:90%;
 }
 
+.shiny-output-error-validation {
+    color: #33CC33;
+    font-weight: bold;
+    margin-top:10px;
+    text-align:center;
+}
 
+.caption1 {
+  color:white;
+  font-size:90%;
+  margin:0 0 0 0;
+}
 
+.location {
+  color:#00CCFF;
+  font-weight:bold; 
+  font-size:90%
+}
+
+.caption2{
+  color:#33CCFF;
+  font-size:85%;
+  font-style:italic;
+}
 
 
