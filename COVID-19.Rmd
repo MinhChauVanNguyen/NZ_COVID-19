@@ -1,28 +1,14 @@
 ---
 title: 'New Zealand''s fictitious COVID-19 flexdashboard'
-resource_files:
-- 2018-SA1-dataset-dwellings-AucklandRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-BayofPlentyRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-CanterburyRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-GisborneRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-Hawke'sBayRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-Manawatu-WanganuiRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-MarlboroughRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-NelsonRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-OtagoRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-NorthlandRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-SouthlandRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-TaranakiRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-TasmanRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-WaikatoRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-WellingtonRegion_updated_11-6-20.xlsx
-- 2018-SA1-dataset-dwellings-WestCoastRegion_updated_11-6-20.xlsx
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
     orientation: rows
-    #navbar:
-     # - { icon: "fa-github", href: "https://google.com", align: right }
+    # navbar:
+    #   - { icon: "fa-github", 
+    #       title: github, 
+    #       href: "https://github.com/MinhChauVanNguyen/NZ_COVID-19", 
+    #       align: right}
 ---
 
 <style>
@@ -70,6 +56,7 @@ table.dataTable  {
 
     
 ```{r setup, include=FALSE}
+library(knitr)
 library(dplyr)          # data manipulation
 library(highcharter)    # produce chart  
 library(formattable)    # produce html table
@@ -77,8 +64,8 @@ library(DT)             # produce html table
 library(shinyBS)        # info message 
 library(shinyWidgets)
 
-source("data_cleaning.R")
 source("hc_theme_dark.R")
+source("data_cleaning.R")
 ```
 
 

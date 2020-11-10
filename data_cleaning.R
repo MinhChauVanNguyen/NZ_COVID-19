@@ -1,7 +1,11 @@
 library(openxlsx)
 
+MAIN_PATH <- paste0(getwd(), "/")
+
+
 # make sure all the xlsx files are closed before running the below command
-file.list <- list.files(pattern='*.xlsx')
+file.list <- list.files(path = paste0(MAIN_PATH, "data"),
+                        pattern='*.xlsx')
 
 # remove otago_NZDEP.xlsx
 file.list <- file.list[-17]
@@ -87,4 +91,7 @@ full_data$Ethnicity <- factor(full_data$Ethnicity, levels = c("Māori", "Pacific
 full_data$TA2018_Name <- factor(full_data$TA2018_Name)
 
 full_data$SA22018_NZDep[full_data$SA22018_NZDep == 0] <- "NA"
+
+#setwd(MAIN_PATH)
+
 
