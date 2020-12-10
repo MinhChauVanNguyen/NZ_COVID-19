@@ -1,20 +1,15 @@
-# Sales Data Dash Analytics
-* published through Heroku Git
+# NZ's fictitious COVID-19 FLEXDASHBOARD
 
 ## About the data
-The data used in this application is bike products sales data accumulated at 
-country and region geographical levels. Data was split into training (80%) and 
-test set (20%) before feature scaling and no data imbalance was found. 
+The data (*number of confirmed positive COVID-19 cases*) used in this dashboard was generated randomly using a simple mathematics algorithm and hence is completely fictitious and has nothing with to do with the true COVID-19 statistics in New Zealand. Information about population estimates, prioritised ethnicity and NZ Deprivation Index recorded at SA2 geographical level are not fabricated. 
 
-## Purpose of the application
-* Develop and test different machine learning predictive and classification modellings techniques
-* Compare the methods' performance metrics
 
-## Content of the application
-1. **Tab 1** - data description (dodge bar graph, table, map)
-2. **Tab 2** - regression modelling (heat map, feature importance plot and performance table)
-3. **Tab 3** - binary classification (confusion matrix, ROC-AUC curve, accuracy table, classification table 
-and feature importance plot)
+## Sources
 
-## Screenshot of the application
-![screenshot](img/DASH.png)
+* [2018 census Population estimates by regions and prioritised ethnicity](https://www.stats.govt.nz/information-releases/statistical-area-1-dataset-for-2018-census-updated-march-2020)
+
+* [NZ Deprivation Index 2018](https://www.otago.ac.nz/wellington/departments/publichealth/research/hirp/otago020194.html)
+
+## Snapshot
+![](www/covid19.png)
+
